@@ -1,2 +1,2 @@
 test:
-	poetry run pytest src/tests/*.py
+	poetry run pytest twingatealloc/tests/*.py
