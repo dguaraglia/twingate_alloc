@@ -1,7 +1,7 @@
 import pytest
 
 from twingatealloc.memorymanager import BufferMemoryManager
-from twingatealloc.exceptions import OutOfMemory
+from twingatealloc.exceptions import OutOfMemory, InvalidPointer
 
 
 def test_simple_allocation():
@@ -73,3 +73,15 @@ def test_fragmentation():
     # Then, if we try to allocate a 2 byte object we should fail
     with pytest.raises(OutOfMemory):
         allocator.alloc(2)
+
+
+def test_double_freeing():
+    # Given
+    allocator = BufferMemoryManager(bytearray(10))
+    pointer = allocator.alloc(5)
+    allocator.free(pointer)
+
+    # Then
+    with pytest.raises(InvalidPointer):
+        allocator.free(pointer)
+

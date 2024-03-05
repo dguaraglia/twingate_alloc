@@ -137,6 +137,10 @@ class BufferMemoryManager(MemoryManager):
         for i in range(len(self.chunks)):
             chunk = self.chunks[i]
             if chunk.offset == pointer.loc and chunk.size == pointer.size:
+                # Don't allow for duplicated freeing
+                if chunk.free:
+                    raise InvalidPointer
+
                 pointer.view.release()
                 chunk.free = True
                 self._join_free_chunks()
