@@ -5,7 +5,7 @@ from twingatealloc.exceptions import OutOfMemory, InvalidPointer
 from twingatealloc.pointer import Pointer
 
 
-class Allocator(ABC):
+class MemoryManager(ABC):
     @abstractmethod
     def alloc(self, size: int) -> Pointer:
         """
@@ -31,7 +31,7 @@ class Chunk:
     free: bool
 
 
-class BufferAllocator(Allocator):
+class BufferMemoryManager(MemoryManager):
     """
     Allocator implementation that takes an initial byte buffer as our allocator's arena.
     """
@@ -97,7 +97,7 @@ class BufferAllocator(Allocator):
         # Dump all groups into the first element of the group
         for group in free_groups:
             # We can't really group a single block
-            if len(group) == 1:
+            if len(group) <= 1:
                 continue
 
             chunk = self.chunks[group[0]]
@@ -114,14 +114,14 @@ class BufferAllocator(Allocator):
         Returns a list of all the groups of free chunks, by index and sorted from lower to higher index.
         """
         free_groups = []
-        group = [] if self.chunks[0].free else None
+        group = None
         for i in range(len(self.chunks)):
             cur = self.chunks[i]
             if cur.free:
                 if group is not None:
                     group.append(i)
                 else:
-                    group = []
+                    group = [i]
             else:
                 if group is not None:
                     free_groups.append(group)
