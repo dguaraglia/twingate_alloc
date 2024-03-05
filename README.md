@@ -24,6 +24,7 @@ If the pointer is invalid (it has been freed before) an `InvalidPointer` excepti
 The `Pointer` object provides the following methods:
 * `write(value: bytes)` writes the passed byte array into the backing memory
 * `read() -> bytes` returns the value stored in the pointer
+* `defrag()` defragments the memory to move all allocated data into a contiguous block
 
 ## Implementation details
 
@@ -32,7 +33,7 @@ The `Pointer` object provides the following methods:
 The `BufferMemoryManager` class is implemented with the following considerations:
 
 * Thread safety is not guaranteed
-* No attempt is made to automatically defragment memory
+* No attempt is made to automatically defragment memory [but a `defrag` method is provided]
 * No attempt is made to clean up the buffer passed. The pointers will be created in
 buffer as-is, which could lead to some unexpected behavior if one were to `read` from
 a pointer before a known value is stored
