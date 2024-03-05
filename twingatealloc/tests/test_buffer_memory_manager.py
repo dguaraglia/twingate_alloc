@@ -85,3 +85,31 @@ def test_double_freeing():
     with pytest.raises(InvalidPointer):
         allocator.free(pointer)
 
+
+def test_defrag():
+    # Given
+    buffer = bytearray(10)
+    allocator = BufferMemoryManager(buffer)
+
+    pointers = []
+    for i in range(10):
+        pointers.append(allocator.alloc(1))
+
+    # When we free every other pointer
+    for i in range(len(pointers)):
+        if i % 2 == 1:
+            allocator.free(pointers[i])
+        else:
+            pointers[i].write(b'a')
+
+    # Then
+    assert buffer == b'a\x00' * 5
+
+    # When
+    allocator.defrag()
+
+    assert buffer[0:5] == b'a' * 5
+    tail = allocator.alloc(5)
+    tail.write(b"value")
+    assert buffer == b'aaaaavalue'
+

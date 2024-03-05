@@ -137,3 +137,33 @@ class BufferMemoryManager(MemoryManager):
 
         # If we got here, we were trying to free a pointer that doesn't exist
         raise InvalidPointer
+
+    def defrag(self) -> None:
+        """
+        Defragments memory so that all occupied chunks are moved to a contiguous section of memory.
+        """
+        candidate_chunks: list[Chunk] = []
+        view = memoryview(self.buffer)
+        marked_for_deletion: list[Chunk] = []
+
+        # Find new candidate locations for all occupied chunks
+        cur_offset = 0  # Size of all allocated memory so far
+        for chunk in self.chunks:
+            if chunk.free:
+                marked_for_deletion.append(chunk)
+            else:
+                view[cur_offset:cur_offset+chunk.size] = chunk.read_from(view)
+                chunk.offset = cur_offset
+                cur_offset += chunk.size
+
+        # Delete all marked for deletion
+        for chunk in marked_for_deletion:
+            self.chunks.remove(chunk)
+
+        # Create a new chunk for the remainder free memory
+        if cur_offset < len(self.buffer):
+            self.chunks.append(Chunk(
+                offset=cur_offset,
+                size=len(self.buffer) - cur_offset,
+                free=True
+            ))
