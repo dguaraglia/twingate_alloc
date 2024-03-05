@@ -1,5 +1,6 @@
 import pytest
 
+from twingatealloc.chunk import Chunk
 from twingatealloc.exceptions import InvalidPointer
 from twingatealloc.pointer import Pointer
 
@@ -7,7 +8,7 @@ from twingatealloc.pointer import Pointer
 def test_write():
     # Given
     mem = bytearray(10)
-    pointer = Pointer(memoryview(mem), 0, 2)
+    pointer = Pointer(memoryview(mem), Chunk(0, 2, False))
 
     # When
     pointer.write(b'ab')
@@ -19,7 +20,7 @@ def test_write():
 def test_read():
     # Given
     mem = bytearray(b"bananas")
-    pointer = Pointer(memoryview(mem), 4, 3)
+    pointer = Pointer(memoryview(mem), Chunk(4, 3, False))
 
     # When
     read = pointer.read()
@@ -35,10 +36,10 @@ def test_invalid_size():
 
     # Then
     with pytest.raises(InvalidPointer):
-        Pointer(view, 10, 0)
+        Pointer(view, Chunk(10, 0, False))
 
     with pytest.raises(InvalidPointer):
-        Pointer(view, 0, 10)
+        Pointer(view, Chunk(0, 10, False))
 
     with pytest.raises(InvalidPointer):
-        Pointer(view, 5, 3)
+        Pointer(view, Chunk(5, 3, False))

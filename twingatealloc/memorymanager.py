@@ -1,6 +1,6 @@
-import dataclasses
 from abc import ABC, abstractmethod
 
+from twingatealloc.chunk import Chunk
 from twingatealloc.exceptions import OutOfMemory, InvalidPointer
 from twingatealloc.pointer import Pointer
 
@@ -22,13 +22,6 @@ class MemoryManager(ABC):
         :param pointer: pointer to the allocated memory
         """
         pass
-
-
-@dataclasses.dataclass
-class Chunk:
-    offset: int
-    size: int
-    free: bool
 
 
 class BufferMemoryManager(MemoryManager):
@@ -79,11 +72,7 @@ class BufferMemoryManager(MemoryManager):
 
     def alloc(self, size: int) -> Pointer:
         chunk = self._find_free_chunk(size)
-        return Pointer(
-            view=memoryview(self.buffer),
-            loc=chunk.offset,
-            size=size
-        )
+        return Pointer(view=memoryview(self.buffer), chunk=chunk)
 
     def _join_free_chunks(self):
         """
@@ -136,7 +125,7 @@ class BufferMemoryManager(MemoryManager):
     def free(self, pointer: Pointer):
         for i in range(len(self.chunks)):
             chunk = self.chunks[i]
-            if chunk.offset == pointer.loc and chunk.size == pointer.size:
+            if pointer.chunk is chunk:
                 # Don't allow for duplicated freeing
                 if chunk.free:
                     raise InvalidPointer

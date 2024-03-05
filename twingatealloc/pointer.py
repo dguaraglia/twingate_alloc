@@ -1,13 +1,13 @@
 from twingatealloc.exceptions import InvalidPointer, InvalidWrite
+from twingatealloc.chunk import Chunk
 
 
 class Pointer:
     """
     Interface to interact with chunks of memory allocated inside the Memory Manager
     """
-    size: int
-    loc: int
     view: memoryview
+    chunk: Chunk
 
     def write(self, value: bytes):
         """
@@ -15,20 +15,17 @@ class Pointer:
         :param value: bytes to write
         :return: None
         """
-        if len(value) > self.size:
-            raise InvalidWrite
-        self.view[self.loc:self.loc+self.size] = value
+        self.chunk.write_to(self.view, value)
 
     def read(self) -> bytes:
         """
         Returns the memory pointed at by this pointer.
         :return:
         """
-        return self.view[self.loc:self.loc+self.size].tobytes()
+        return self.chunk.read_from(self.view)
 
-    def __init__(self, view: memoryview, loc: int, size: int) -> None:
-        if len(view) < loc + size:
+    def __init__(self, view: memoryview, chunk: Chunk) -> None:
+        if not chunk.fits_in(view):
             raise InvalidPointer
+        self.chunk = chunk
         self.view = view
-        self.loc = loc
-        self.size = size
