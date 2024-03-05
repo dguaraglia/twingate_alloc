@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "twingate-alloc"
+name = "twingatealloc"
 version = "0.1.0"
 description = "A small memory allocator implementation"
 authors = ["David Guaraglia <david@guaraglia.com>"]
